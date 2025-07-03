@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from "react";
 
 interface ArticleReaderProps {
@@ -118,16 +117,59 @@ export function ArticleReader({ content, onSwipeLeft, onSwipeRight, backgroundCo
       (p as HTMLElement).style.marginBottom = '1rem';
     });
 
-    // Make all images responsive and properly sized
+    // Make all images responsive and properly sized with gallery-appropriate margins
     const images = container.querySelectorAll('img');
     images.forEach(img => {
-      img.style.maxWidth = '100%';
+      img.style.maxWidth = 'calc(100% - 2rem)'; // Leave 1rem margin on each side
       img.style.width = 'auto';
       img.style.height = 'auto';
       img.style.display = 'block';
-      img.style.margin = '1rem auto';
+      img.style.margin = '1.5rem auto'; // Increased margin for better spacing
       img.style.borderRadius = '8px';
-      img.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+      img.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+      img.style.objectFit = 'contain'; // Ensure aspect ratio is maintained
+    });
+
+    // Style videos with proper sizing and margins
+    const videos = container.querySelectorAll('video');
+    videos.forEach(video => {
+      video.style.maxWidth = 'calc(100% - 2rem)'; // Leave 1rem margin on each side
+      video.style.width = 'auto';
+      video.style.height = 'auto';
+      video.style.display = 'block';
+      video.style.margin = '1.5rem auto'; // Increased margin for better spacing
+      video.style.borderRadius = '8px';
+      video.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+      video.style.objectFit = 'contain'; // Ensure aspect ratio is maintained
+    });
+
+    // Style embedded media containers (iframes, embeds)
+    const embeds = container.querySelectorAll('iframe, embed, object');
+    embeds.forEach(embed => {
+      (embed as HTMLElement).style.maxWidth = 'calc(100% - 2rem)';
+      (embed as HTMLElement).style.width = 'auto';
+      (embed as HTMLElement).style.display = 'block';
+      (embed as HTMLElement).style.margin = '1.5rem auto';
+      (embed as HTMLElement).style.borderRadius = '8px';
+      (embed as HTMLElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    });
+
+    // Style figure elements (often contain images/videos)
+    const figures = container.querySelectorAll('figure');
+    figures.forEach(figure => {
+      (figure as HTMLElement).style.margin = '1.5rem auto';
+      (figure as HTMLElement).style.maxWidth = 'calc(100% - 2rem)';
+      (figure as HTMLElement).style.textAlign = 'center';
+    });
+
+    // Style figure captions
+    const figcaptions = container.querySelectorAll('figcaption');
+    figcaptions.forEach(caption => {
+      (caption as HTMLElement).style.color = textColor;
+      (caption as HTMLElement).style.fontSize = '0.875rem';
+      (caption as HTMLElement).style.fontStyle = 'italic';
+      (caption as HTMLElement).style.marginTop = '0.5rem';
+      (caption as HTMLElement).style.opacity = '0.8';
     });
 
     // Style tables with visible borders
