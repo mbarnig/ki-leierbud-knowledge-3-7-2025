@@ -179,7 +179,7 @@ export function ArticleReader({ content, onSwipeLeft, onSwipeRight, backgroundCo
       }
     });
 
-    // Convert YouTube URLs in text to embedded players
+    // Convert YouTube URLs in text to embedded players with inline playback
     const textElements = container.querySelectorAll('p, div, span');
     textElements.forEach(element => {
       if (element.children.length === 0 && element.textContent) {
@@ -189,10 +189,10 @@ export function ArticleReader({ content, onSwipeLeft, onSwipeRight, backgroundCo
         if (youtubeRegex.test(text)) {
           const videoId = text.match(youtubeRegex)?.[0]?.match(/(?:v=|youtu\.be\/)([\w-]+)/)?.[1];
           if (videoId) {
-            // Replace the text with an embedded YouTube player
+            // Replace the text with an embedded YouTube player with inline playback parameters
             element.innerHTML = `
               <iframe 
-                src="https://www.youtube-nocookie.com/embed/${videoId}" 
+                src="https://www.youtube-nocookie.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&playsinline=1&iv_load_policy=3&disablekb=1&controls=1&autohide=1&fs=0" 
                 style="
                   width: calc(100% - 2rem);
                   aspect-ratio: 16 / 9;
@@ -212,6 +212,26 @@ export function ArticleReader({ content, onSwipeLeft, onSwipeRight, backgroundCo
           }
         }
       }
+    });
+
+    // Update existing YouTube iframes to use inline playback parameters
+    const existingYouTubeIframes = container.querySelectorAll('iframe[src*="youtube"]');
+    existingYouTubeIframes.forEach(iframe => {
+      const currentSrc = iframe.getAttribute('src') || '';
+      const url = new URL(currentSrc);
+      
+      // Add parameters for inline playback and remove large play button
+      url.searchParams.set('modestbranding', '1');
+      url.searchParams.set('rel', '0');
+      url.searchParams.set('showinfo', '0');
+      url.searchParams.set('playsinline', '1');
+      url.searchParams.set('iv_load_policy', '3');
+      url.searchParams.set('disablekb', '1');
+      url.searchParams.set('controls', '1');
+      url.searchParams.set('autohide', '1');
+      url.searchParams.set('fs', '0'); // Disable fullscreen button
+      
+      iframe.setAttribute('src', url.toString());
     });
 
     // Style figure elements (often contain images/videos)
