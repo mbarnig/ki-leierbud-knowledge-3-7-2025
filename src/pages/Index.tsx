@@ -22,8 +22,8 @@ const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const isMobile = useIsMobile();
   
-  // Get article ID from URL params, default to 12 as requested
-  const articleId = parseInt(searchParams.get('p') || '12');
+  // Get article ID from URL params, default to 1357 as requested
+  const articleId = parseInt(searchParams.get('p') || '1357');
   const selectedLanguage = searchParams.get('lang') || 'en';
   
   const [navigation, setNavigation] = useState<WordPressNavigation>({});

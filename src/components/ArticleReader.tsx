@@ -120,38 +120,98 @@ export function ArticleReader({ content, onSwipeLeft, onSwipeRight, backgroundCo
     // Make all images responsive and properly sized with gallery-appropriate margins
     const images = container.querySelectorAll('img');
     images.forEach(img => {
-      img.style.maxWidth = 'calc(100% - 2rem)'; // Leave 1rem margin on each side
+      img.style.maxWidth = 'calc(100% - 2rem)';
       img.style.width = 'auto';
       img.style.height = 'auto';
       img.style.display = 'block';
-      img.style.margin = '1.5rem auto'; // Increased margin for better spacing
+      img.style.margin = '1.5rem auto';
       img.style.borderRadius = '8px';
       img.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-      img.style.objectFit = 'contain'; // Ensure aspect ratio is maintained
+      img.style.objectFit = 'contain';
     });
 
     // Style videos with proper sizing and margins
     const videos = container.querySelectorAll('video');
     videos.forEach(video => {
-      video.style.maxWidth = 'calc(100% - 2rem)'; // Leave 1rem margin on each side
-      video.style.width = 'auto';
+      video.style.maxWidth = 'calc(100% - 2rem)';
+      video.style.width = '100%';
       video.style.height = 'auto';
       video.style.display = 'block';
-      video.style.margin = '1.5rem auto'; // Increased margin for better spacing
+      video.style.margin = '1.5rem auto';
       video.style.borderRadius = '8px';
       video.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-      video.style.objectFit = 'contain'; // Ensure aspect ratio is maintained
+      video.style.objectFit = 'contain';
     });
 
-    // Style embedded media containers (iframes, embeds)
+    // Style embedded media containers (iframes, embeds) with proper aspect ratio for YouTube
     const embeds = container.querySelectorAll('iframe, embed, object');
     embeds.forEach(embed => {
-      (embed as HTMLElement).style.maxWidth = 'calc(100% - 2rem)';
-      (embed as HTMLElement).style.width = 'auto';
-      (embed as HTMLElement).style.display = 'block';
-      (embed as HTMLElement).style.margin = '1.5rem auto';
-      (embed as HTMLElement).style.borderRadius = '8px';
-      (embed as HTMLElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+      const element = embed as HTMLElement;
+      
+      // Check if it's a YouTube embed or similar video content
+      const src = element.getAttribute('src') || '';
+      const isYouTube = src.includes('youtube.com') || src.includes('youtu.be') || src.includes('youtube-nocookie.com');
+      
+      if (isYouTube || element.tagName.toLowerCase() === 'iframe') {
+        // Set up responsive video container with 16:9 aspect ratio
+        element.style.width = 'calc(100% - 2rem)';
+        element.style.height = 'auto';
+        element.style.aspectRatio = '16 / 9';
+        element.style.maxWidth = '800px'; // Reasonable max width for videos
+        element.style.minHeight = '300px'; // Minimum height for visibility
+        element.style.display = 'block';
+        element.style.margin = '1.5rem auto';
+        element.style.borderRadius = '8px';
+        element.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        
+        // Ensure the iframe allows fullscreen and other video features
+        element.setAttribute('allowfullscreen', 'true');
+        element.setAttribute('webkitallowfullscreen', 'true');
+        element.setAttribute('mozallowfullscreen', 'true');
+      } else {
+        // Default styling for other embeds
+        element.style.maxWidth = 'calc(100% - 2rem)';
+        element.style.width = '100%';
+        element.style.display = 'block';
+        element.style.margin = '1.5rem auto';
+        element.style.borderRadius = '8px';
+        element.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+      }
+    });
+
+    // Convert YouTube URLs in text to embedded players
+    const textElements = container.querySelectorAll('p, div, span');
+    textElements.forEach(element => {
+      if (element.children.length === 0 && element.textContent) {
+        const text = element.textContent;
+        const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/g;
+        
+        if (youtubeRegex.test(text)) {
+          const videoId = text.match(youtubeRegex)?.[0]?.match(/(?:v=|youtu\.be\/)([\w-]+)/)?.[1];
+          if (videoId) {
+            // Replace the text with an embedded YouTube player
+            element.innerHTML = `
+              <iframe 
+                src="https://www.youtube-nocookie.com/embed/${videoId}" 
+                style="
+                  width: calc(100% - 2rem);
+                  aspect-ratio: 16 / 9;
+                  max-width: 800px;
+                  min-height: 300px;
+                  display: block;
+                  margin: 1.5rem auto;
+                  border-radius: 8px;
+                  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                  border: none;
+                "
+                allowfullscreen
+                webkitallowfullscreen
+                mozallowfullscreen
+              ></iframe>
+            `;
+          }
+        }
+      }
     });
 
     // Style figure elements (often contain images/videos)
