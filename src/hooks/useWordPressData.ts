@@ -5,7 +5,14 @@ import { Article } from '@/types';
 
 export function useWordPressData(articleId: number, language: string = 'en') {
   // Skip query if articleId is invalid (0, negative, or NaN)
-  const isValidArticleId = articleId && articleId > 0 && !isNaN(articleId);
+  const isValidArticleId = Boolean(articleId && articleId > 0 && !isNaN(articleId));
+  
+  console.log('Query validation:', {
+    articleId,
+    language,
+    isValidArticleId,
+    typeof: typeof isValidArticleId
+  });
   
   // Fetch the specific article with language parameter
   const { data: wpArticle, isLoading: isLoadingArticle, error: articleError } = useQuery({
@@ -14,7 +21,7 @@ export function useWordPressData(articleId: number, language: string = 'en') {
     retry: 1,
     retryDelay: 1000,
     staleTime: 30000,
-    enabled: isValidArticleId, // Only run query if articleId is valid
+    enabled: isValidArticleId, // This must be a boolean
   });
 
   // Determine the actual language of the current article

@@ -25,6 +25,8 @@ const Index = () => {
   const articleId = parseInt(searchParams.get('p') || '12');
   const selectedLanguage = searchParams.get('lang') || 'en';
   
+  console.log('Index component loaded with:', { articleId, selectedLanguage });
+  
   const [navigation, setNavigation] = useState<WordPressNavigation>({});
 
   // Get color scheme
@@ -35,7 +37,7 @@ const Index = () => {
 
   // Get next article data for dual-pane display (only for desktop and valid next article ID)
   const nextArticleId = navigation.nextArticle?.id;
-  const shouldFetchNextArticle = !isMobile && nextArticleId && nextArticleId > 0;
+  const shouldFetchNextArticle = Boolean(!isMobile && nextArticleId && nextArticleId > 0);
   
   console.log('Next article fetch decision:', {
     isMobile,
