@@ -13,19 +13,19 @@ export function useWordPressData(articleId: number, language: string = 'en') {
     staleTime: 30000,
   });
 
-  // Get available languages from translations - use direct translation IDs
+  // Determine the actual language of the current article
+  const actualLanguage = wpArticle?.translations 
+    ? getActualLanguage(articleId, wpArticle.translations, language)
+    : language;
+
+  // Get available languages from translations
   const availableLanguages = wpArticle?.translations ? 
     Object.entries(wpArticle.translations).map(([langCode, translationId]) => ({
       code: langCode,
       name: getLanguageName(langCode),
       url: `/?p=${translationId}&lang=${langCode}`
     })) : 
-    [
-      { code: 'en', name: 'English', url: `/?p=${articleId}&lang=en` },
-      { code: 'fr', name: 'Français', url: `/?p=${articleId}&lang=fr` },
-      { code: 'de', name: 'Deutsch', url: `/?p=${articleId}&lang=de` },
-      { code: 'lb', name: 'Lëtzebuergesch', url: `/?p=${articleId}&lang=lb` }
-    ];
+    [{ code: actualLanguage, name: getLanguageName(actualLanguage), url: `/?p=${articleId}&lang=${actualLanguage}` }];
 
   // Get the article's category information
   const categoryTerm: any = wpArticle?._embedded?.['wp:term']?.[0]?.find((t: any) => t.taxonomy === 'category');
@@ -45,7 +45,8 @@ export function useWordPressData(articleId: number, language: string = 'en') {
 
   console.log('WordPress article data:', {
     articleId,
-    language,
+    requestedLanguage: language,
+    actualLanguage,
     article: !!article,
     title: article?.title,
     category: article?.category,
@@ -62,10 +63,23 @@ export function useWordPressData(articleId: number, language: string = 'en') {
   return {
     article,
     availableLanguages,
+    actualLanguage, // Return the actual language of the current article
     wpArticle, // Expose raw WordPress data for direct translation access
     isLoading: isLoadingArticle,
     error: articleError
   };
+}
+
+// Helper function to determine the actual language of the current article
+function getActualLanguage(articleId: number, translations: { [key: string]: number }, requestedLanguage: string): string {
+  // Check if the current article ID matches any translation
+  for (const [langCode, translationId] of Object.entries(translations)) {
+    if (translationId === articleId) {
+      return langCode;
+    }
+  }
+  // If no match found, return the requested language
+  return requestedLanguage;
 }
 
 function getLanguageName(langCode: string): string {

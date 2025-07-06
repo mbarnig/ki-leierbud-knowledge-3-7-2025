@@ -30,14 +30,14 @@ const Index = () => {
   // Get color scheme
   const { colorScheme, textColors, isLoading: colorLoading, error: colorError } = useColorScheme();
 
-  // Get main article data with language support - now includes wpArticle
-  const { article, availableLanguages, wpArticle, isLoading, error } = useWordPressData(articleId, selectedLanguage);
+  // Get main article data with language support - now includes wpArticle and actualLanguage
+  const { article, availableLanguages, actualLanguage, wpArticle, isLoading, error } = useWordPressData(articleId, selectedLanguage);
 
   // Get next article data for dual-pane display (only for desktop)
   const nextArticleId = navigation.nextArticle?.id;
   const { article: nextArticle, isLoading: isLoadingNext } = useWordPressData(
     nextArticleId || 0, 
-    selectedLanguage
+    actualLanguage // Use the actual language instead of selected language
   );
 
   // Memoize the navigation fetch to prevent infinite loops
@@ -77,9 +77,19 @@ const Index = () => {
 
   const handleLanguageChange = (language: string) => {
     console.log('Language change requested:', language);
+    console.log('Current actual language:', actualLanguage);
     console.log('Available translations:', wpArticle?.translations);
     
-    // Use direct translation ID access instead of URL parsing
+    // If requesting the same language as current, do nothing
+    if (language === actualLanguage) {
+      toast({
+        title: "Already in this language",
+        description: `Article is already displayed in ${getLanguageDisplayName(language)}`,
+      });
+      return;
+    }
+    
+    // Use direct translation ID access
     if (wpArticle?.translations && wpArticle.translations[language]) {
       const targetArticleId = wpArticle.translations[language];
       console.log(`Using direct translation ID ${targetArticleId} for language ${language}`);
@@ -251,7 +261,7 @@ const Index = () => {
       <ArticleHeader
         title={showDualPane ? `${decodedTitle} | ${decodedNextTitle}` : decodedTitle}
         availableLanguages={availableLanguages}
-        selectedLanguage={selectedLanguage}
+        selectedLanguage={actualLanguage} // Use actual language instead of selected
         onLanguageChange={handleLanguageChange}
         colorScheme={colorScheme}
         textColor={textColors.header}
