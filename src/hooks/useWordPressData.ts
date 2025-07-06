@@ -7,25 +7,18 @@ export function useWordPressData(articleId: number, language: string = 'en') {
   // Fetch the specific article with language parameter
   const { data: wpArticle, isLoading: isLoadingArticle, error: articleError } = useQuery({
     queryKey: ['article', articleId, language],
-    queryFn: () => {
-      // If we have translations and the requested language has a different ID, use that
-      if (wpArticle?.translations && wpArticle.translations[language] && wpArticle.translations[language] !== articleId) {
-        console.log(`Using translation ID ${wpArticle.translations[language]} for language ${language}`);
-        return wordpressApi.fetchArticle(wpArticle.translations[language], language);
-      }
-      return wordpressApi.fetchArticle(articleId, language);
-    },
+    queryFn: () => wordpressApi.fetchArticle(articleId, language),
     retry: 1,
     retryDelay: 1000,
     staleTime: 30000,
   });
 
-  // Get available languages from translations
+  // Get available languages from translations - use direct translation IDs
   const availableLanguages = wpArticle?.translations ? 
-    Object.keys(wpArticle.translations).map(langCode => ({
+    Object.entries(wpArticle.translations).map(([langCode, translationId]) => ({
       code: langCode,
       name: getLanguageName(langCode),
-      url: `/?p=${wpArticle.translations![langCode]}&lang=${langCode}`
+      url: `/?p=${translationId}&lang=${langCode}`
     })) : 
     [
       { code: 'en', name: 'English', url: `/?p=${articleId}&lang=en` },
@@ -61,6 +54,7 @@ export function useWordPressData(articleId: number, language: string = 'en') {
     contentLength: article?.content?.length,
     availableLanguages: availableLanguages.map(l => l.code),
     translations: wpArticle?.translations,
+    translationIds: wpArticle?.translations ? Object.entries(wpArticle.translations) : [],
     isLoading: isLoadingArticle,
     hasError: !!articleError
   });
@@ -68,6 +62,7 @@ export function useWordPressData(articleId: number, language: string = 'en') {
   return {
     article,
     availableLanguages,
+    wpArticle, // Expose raw WordPress data for direct translation access
     isLoading: isLoadingArticle,
     error: articleError
   };

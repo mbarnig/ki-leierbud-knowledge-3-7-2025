@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ArticleHeader } from "@/components/ArticleHeader";
@@ -31,8 +30,8 @@ const Index = () => {
   // Get color scheme
   const { colorScheme, textColors, isLoading: colorLoading, error: colorError } = useColorScheme();
 
-  // Get main article data with language support
-  const { article, availableLanguages, isLoading, error } = useWordPressData(articleId, selectedLanguage);
+  // Get main article data with language support - now includes wpArticle
+  const { article, availableLanguages, wpArticle, isLoading, error } = useWordPressData(articleId, selectedLanguage);
 
   // Get next article data for dual-pane display (only for desktop)
   const nextArticleId = navigation.nextArticle?.id;
@@ -77,29 +76,43 @@ const Index = () => {
   };
 
   const handleLanguageChange = (language: string) => {
-    // Find the article ID for the selected language
-    const targetLanguage = availableLanguages.find(lang => lang.code === language);
-    if (targetLanguage) {
-      const urlParams = new URL(targetLanguage.url, window.location.origin).searchParams;
-      const targetArticleId = urlParams.get('p');
+    console.log('Language change requested:', language);
+    console.log('Available translations:', wpArticle?.translations);
+    
+    // Use direct translation ID access instead of URL parsing
+    if (wpArticle?.translations && wpArticle.translations[language]) {
+      const targetArticleId = wpArticle.translations[language];
+      console.log(`Using direct translation ID ${targetArticleId} for language ${language}`);
       
-      if (targetArticleId) {
-        const newParams = new URLSearchParams();
-        newParams.set('p', targetArticleId);
-        newParams.set('lang', language);
-        // Preserve color parameter if present
-        const colorParam = searchParams.get('color');
-        if (colorParam) {
-          newParams.set('color', colorParam);
-        }
-        setSearchParams(newParams);
-        
-        toast({
-          title: "Language Changed",
-          description: `Switched to ${targetLanguage.name}`,
-        });
+      const newParams = new URLSearchParams();
+      newParams.set('p', targetArticleId.toString());
+      newParams.set('lang', language);
+      
+      // Preserve color parameter if present
+      const colorParam = searchParams.get('color');
+      if (colorParam) {
+        newParams.set('color', colorParam);
       }
+      
+      setSearchParams(newParams);
+      
+      toast({
+        title: "Language Changed",
+        description: `Switched to ${getLanguageDisplayName(language)}`,
+      });
+    } else {
+      console.warn(`No translation available for language: ${language}`);
+      toast({
+        title: "Translation Not Available",
+        description: `Translation for ${getLanguageDisplayName(language)} is not available for this article`,
+        variant: "destructive"
+      });
     }
+  };
+
+  const getLanguageDisplayName = (langCode: string): string => {
+    const targetLanguage = availableLanguages.find(lang => lang.code === langCode);
+    return targetLanguage?.name || langCode.toUpperCase();
   };
 
   const handlePrevious = () => {
