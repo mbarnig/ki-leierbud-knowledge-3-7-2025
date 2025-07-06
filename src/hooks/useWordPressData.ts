@@ -4,6 +4,9 @@ import { wordpressApi, WordPressArticle } from '@/services/wordpressApi';
 import { Article } from '@/types';
 
 export function useWordPressData(articleId: number, language: string = 'en') {
+  // Skip query if articleId is invalid (0, negative, or NaN)
+  const isValidArticleId = articleId && articleId > 0 && !isNaN(articleId);
+  
   // Fetch the specific article with language parameter
   const { data: wpArticle, isLoading: isLoadingArticle, error: articleError } = useQuery({
     queryKey: ['article', articleId, language],
@@ -11,6 +14,7 @@ export function useWordPressData(articleId: number, language: string = 'en') {
     retry: 1,
     retryDelay: 1000,
     staleTime: 30000,
+    enabled: isValidArticleId, // Only run query if articleId is valid
   });
 
   // Determine the actual language of the current article
@@ -23,7 +27,8 @@ export function useWordPressData(articleId: number, language: string = 'en') {
     requestedLanguage: language,
     actualLanguage,
     translations: wpArticle?.translations,
-    translationEntries: wpArticle?.translations ? Object.entries(wpArticle.translations) : []
+    translationEntries: wpArticle?.translations ? Object.entries(wpArticle.translations) : [],
+    isValidArticleId
   });
 
   // Get available languages from translations
@@ -65,7 +70,8 @@ export function useWordPressData(articleId: number, language: string = 'en') {
     translations: wpArticle?.translations,
     translationIds: wpArticle?.translations ? Object.entries(wpArticle.translations) : [],
     isLoading: isLoadingArticle,
-    hasError: !!articleError
+    hasError: !!articleError,
+    isValidArticleId
   });
 
   return {

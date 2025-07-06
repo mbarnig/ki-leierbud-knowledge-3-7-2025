@@ -34,10 +34,19 @@ const Index = () => {
   // Get main article data with language support - now includes wpArticle and actualLanguage
   const { article, availableLanguages, actualLanguage, wpArticle, isLoading, error } = useWordPressData(articleId, selectedLanguage);
 
-  // Get next article data for dual-pane display (only for desktop)
+  // Get next article data for dual-pane display (only for desktop and valid next article ID)
   const nextArticleId = navigation.nextArticle?.id;
+  const shouldFetchNextArticle = !isMobile && nextArticleId && nextArticleId > 0;
+  
+  console.log('Next article fetch decision:', {
+    isMobile,
+    nextArticleId,
+    shouldFetchNextArticle,
+    actualLanguage
+  });
+  
   const { article: nextArticle, isLoading: isLoadingNext } = useWordPressData(
-    nextArticleId || 0, 
+    shouldFetchNextArticle ? nextArticleId : 0, // Use 0 to disable the query when not needed
     actualLanguage // Use the actual language instead of selected language
   );
 
@@ -239,6 +248,13 @@ const Index = () => {
 
   // Show dual-pane layout for desktop when we have a next article
   const showDualPane = !isMobile && nextArticle && !isLoadingNext;
+
+  console.log('Dual pane decision:', {
+    isMobile,
+    hasNextArticle: !!nextArticle,
+    isLoadingNext,
+    showDualPane
+  });
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: colorScheme.main }}>
