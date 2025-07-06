@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ArticleHeader } from "@/components/ArticleHeader";
@@ -21,8 +22,8 @@ const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const isMobile = useIsMobile();
   
-  // Get article ID from URL params, default to 1357 as requested
-  const articleId = parseInt(searchParams.get('p') || '1357');
+  // Get article ID from URL params, default to 12 for testing
+  const articleId = parseInt(searchParams.get('p') || '12');
   const selectedLanguage = searchParams.get('lang') || 'en';
   
   const [navigation, setNavigation] = useState<WordPressNavigation>({});
@@ -76,12 +77,15 @@ const Index = () => {
   };
 
   const handleLanguageChange = (language: string) => {
-    console.log('Language change requested:', language);
+    console.log('=== LANGUAGE CHANGE DEBUG ===');
+    console.log('Requested language:', language);
     console.log('Current actual language:', actualLanguage);
+    console.log('Current article ID:', articleId);
     console.log('Available translations:', wpArticle?.translations);
     
-    // If requesting the same language as current, do nothing
+    // If requesting the same language as current, show message
     if (language === actualLanguage) {
+      console.log('Already in requested language, showing toast');
       toast({
         title: "Already in this language",
         description: `Article is already displayed in ${getLanguageDisplayName(language)}`,
@@ -92,7 +96,7 @@ const Index = () => {
     // Use direct translation ID access
     if (wpArticle?.translations && wpArticle.translations[language]) {
       const targetArticleId = wpArticle.translations[language];
-      console.log(`Using direct translation ID ${targetArticleId} for language ${language}`);
+      console.log(`Found translation: ${language} -> article ID ${targetArticleId}`);
       
       const newParams = new URLSearchParams();
       newParams.set('p', targetArticleId.toString());
@@ -104,6 +108,7 @@ const Index = () => {
         newParams.set('color', colorParam);
       }
       
+      console.log('Navigating to:', newParams.toString());
       setSearchParams(newParams);
       
       toast({
@@ -112,6 +117,7 @@ const Index = () => {
       });
     } else {
       console.warn(`No translation available for language: ${language}`);
+      console.log('Available translations:', Object.keys(wpArticle?.translations || {}));
       toast({
         title: "Translation Not Available",
         description: `Translation for ${getLanguageDisplayName(language)} is not available for this article`,

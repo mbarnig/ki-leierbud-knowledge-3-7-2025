@@ -18,6 +18,14 @@ export function useWordPressData(articleId: number, language: string = 'en') {
     ? getActualLanguage(articleId, wpArticle.translations, language)
     : language;
 
+  console.log('Language detection:', {
+    articleId,
+    requestedLanguage: language,
+    actualLanguage,
+    translations: wpArticle?.translations,
+    translationEntries: wpArticle?.translations ? Object.entries(wpArticle.translations) : []
+  });
+
   // Get available languages from translations
   const availableLanguages = wpArticle?.translations ? 
     Object.entries(wpArticle.translations).map(([langCode, translationId]) => ({
@@ -72,12 +80,18 @@ export function useWordPressData(articleId: number, language: string = 'en') {
 
 // Helper function to determine the actual language of the current article
 function getActualLanguage(articleId: number, translations: { [key: string]: number }, requestedLanguage: string): string {
+  console.log('Determining actual language for article', articleId, 'with translations:', translations);
+  
   // Check if the current article ID matches any translation
   for (const [langCode, translationId] of Object.entries(translations)) {
+    console.log(`Checking: ${langCode} -> ${translationId} (current: ${articleId})`);
     if (translationId === articleId) {
+      console.log(`Found match: article ${articleId} is in language ${langCode}`);
       return langCode;
     }
   }
+  
+  console.log(`No translation match found for article ${articleId}, defaulting to requested language: ${requestedLanguage}`);
   // If no match found, return the requested language
   return requestedLanguage;
 }
