@@ -129,7 +129,7 @@ const Index = () => {
   };
 
   const handleReturnToTOC = () => {
-    window.open("https://admin.ki-leierbud.lu/?p=244", "_blank");
+    window.open("https://ki-leierbud.lu/toc.html", "_blank");
   };
 
   const handleSwipeLeft = () => {
