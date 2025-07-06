@@ -40,19 +40,19 @@ export function useWordPressData(articleId: number, language: string = 'en') {
     })) : 
     [{ code: actualLanguage, name: getLanguageName(actualLanguage), url: `/?p=${articleId}&lang=${actualLanguage}` }];
 
-  // Get the article's category information
-  const categoryTerm: any = wpArticle?._embedded?.['wp:term']?.[0]?.find((t: any) => t.taxonomy === 'category');
+  // Get the article's category information - safely access embedded data
+  const categoryTerm = wpArticle?._embedded?.['wp:term']?.[0]?.find((t: any) => t.taxonomy === 'category');
   const articleCategoryName = categoryTerm?.name || 'Unknown Category';
   const categoryId = categoryTerm?.id || 1;
 
-  // Convert WordPress article to our Article type
+  // Convert WordPress article to our Article type - only if wpArticle exists
   const article: Article | null = wpArticle ? {
     id: wpArticle.id,
-    title: wpArticle.title.rendered,
+    title: wpArticle.title?.rendered || 'Untitled',
     category: articleCategoryName,
     tag: wpArticle._embedded?.['wp:term']?.[1]?.find((t: any) => t.taxonomy === 'post_tag')?.name || 'article',
     author: wpArticle._embedded?.author?.[0]?.name || 'admin',
-    content: wpArticle.content.rendered,
+    content: wpArticle.content?.rendered || '',
     categoryId: categoryId
   } : null;
 
